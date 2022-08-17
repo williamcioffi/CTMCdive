@@ -14,6 +14,7 @@ FitCTMCdive(
   exp_time = NULL,
   fixed_decay = FALSE,
   knots = NULL,
+  breaks = NULL,
   dt = NULL
 )
 }

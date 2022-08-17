@@ -3,7 +3,7 @@
 #' Compute matrices required to fit the model
 #'
 #' @param forms formulae
-#' @param dat data frame (see fitCTMCdive)
+#' @param dat data frame (see FitCTMCdive)
 #' @param min_dwell start point for the integrals
 #' @param series TRUE if data is a series rather than dive-by-dive
 #' @param nint number of integration points

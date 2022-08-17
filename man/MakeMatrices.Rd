@@ -4,12 +4,20 @@
 \alias{MakeMatrices}
 \title{Compute matrices required to fit the model}
 \usage{
-MakeMatrices(forms, dat, min_dwell, series = FALSE, nint = 10000, knots = NULL)
+MakeMatrices(
+  forms,
+  dat,
+  min_dwell,
+  series = FALSE,
+  nint = 10000,
+  breaks = NULL,
+  knots = NULL
+)
 }
 \arguments{
 \item{forms}{formulae}
 
-\item{dat}{data frame (see fitCTMCdive)}
+\item{dat}{data frame (see FitCTMCdive)}
 
 \item{min_dwell}{start point for the integrals}
 
