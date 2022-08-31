@@ -234,7 +234,8 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
   # smoothing data
   random <- NULL
   map <- list()
-  sm <- MakeMatrices(forms, dat, min_dwell = min_dwell, series = series, nint = nint, knots = knots, breaks = breaks)
+  sm <- MakeMatrices(forms, dat, min_dwell = min_dwell, series = series,
+                     nint = nint, knots = knots, breaks = breaks)
 
   len <- c(ncol(sm$Xs_dive), ncol(sm$Xs_surface))
   names(len) <- c("dive", "surface")
