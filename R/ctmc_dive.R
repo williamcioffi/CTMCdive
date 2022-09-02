@@ -40,24 +40,24 @@ MakeMatrices <- function(forms, dat, min_dwell, series = FALSE, nint = 10000, br
 
   # reduce data if series to dive-by-dive
   if (series) {
-    divedat <- dat[dat$start == 1,] 
+    divedat <- dat[dat$start == 1,]
   } else {
     divedat <- dat
   }
-  
+
   ## build design matrix
   mm <- predict(gam_dive, newdata = divedat, type = "lpmatrix")
   # fixed effects design matrix
   res$Xs_dive <- mm[, 1:gam_dive$nsdf, drop=FALSE]
   # smooth design matrix
   res$A_dive <- mm[, -c(1:gam_dive$nsdf), drop=FALSE]
-  # weibull design matrix 
+  # weibull design matrix
   res$W_dive <- matrix(c(0, log(divedat$surface[-1] + 1e-10)), nr = nrow(divedat), nc = 1)
-  
+
   ## surface model
   # GAM setup
   gam_surface <- gam(forms[["surface"]], data = dat, method = "REML", knots = knots)
-  res$gam_surface <- gam_surface 
+  res$gam_surface <- gam_surface
   # accumulate smoothing matrix, block diagonal
   if(length(gam_surface$smooth) > 0){
     S_surface_list <- list()
@@ -88,7 +88,7 @@ MakeMatrices <- function(forms, dat, min_dwell, series = FALSE, nint = 10000, br
   res$A_surf <- mm[, -c(1:gam_surface$nsdf), drop=FALSE]
   # weibull design matrix
   res$W_surf <- matrix(log(surfdat$dive + 1e-10), nr = nrow(surfdat), nc = 1)
-  
+
   # construct prediction grid
   n <- nrow(divedat)
   ints <- seq(divedat$time[1],
@@ -102,7 +102,7 @@ MakeMatrices <- function(forms, dat, min_dwell, series = FALSE, nint = 10000, br
     for (i in 1:nrow(breaks)) {
       breakstart <- which.min((ints - breaks[i,1])^2)
       breakend <- which.min((ints - breaks[i,2])^2)
-      breakwh[breakstart:breakend] <- 0 
+      breakwh[breakstart:breakend] <- 0
     }
   }
 
@@ -111,29 +111,29 @@ MakeMatrices <- function(forms, dat, min_dwell, series = FALSE, nint = 10000, br
   res$Xs_grid_dive <- pred_mat_dive[, 1:gam_dive$nsdf, drop=FALSE]
   res$A_grid_dive <- pred_mat_dive[, -c(1:gam_dive$nsdf), drop=FALSE]
 
-  # weibull for integration grid 
+  # weibull for integration grid
   t_dive <- c(-1e-10, divedat$time + divedat$dive, max(divedat$time + divedat$surface + divedat$dive))
   br <- sort(unique(t_dive))
   cut_dive <- as.numeric(cut(ints, breaks = br))
   dt_dive <- ints - br[cut_dive]
   res$W_grid_dive <- log(dt_dive + 1e-10)
-  
+
   pred_mat_surface <- pred_mat_maker(gam_surface, dat, ints)
   res$Xs_grid_surface <- pred_mat_surface[, 1:gam_surface$nsdf, drop=FALSE]
   res$A_grid_surface <- pred_mat_surface[, -c(1:gam_surface$nsdf), drop=FALSE]
 
-  # weibull for integration grid 
+  # weibull for integration grid
   t_surf <- c(-1e-10, divedat$time, max(divedat$time + divedat$surface + divedat$dive))
   br <- sort(unique(t_surf))
   cut_surf <- as.numeric(cut(ints, breaks = br))
-  dt_surf <- ints - br[cut_surf] 
+  dt_surf <- ints - br[cut_surf]
   res$W_grid_surf <- log(dt_surf + 1e-10)
-  
+
   # get integration matrices
   indD <- indS <- matrix(0, nrow = n, ncol = nint)
   dive_end <- divedat$time + divedat$dive
   for (i in 1:nint) {
-    if (breakwh[i] < 1) next 
+    if (breakwh[i] < 1) next
     wh <- which((ints[i] < divedat$time[-1] + 1e-10) &
                 (ints[i] > (dive_end[-n]+min_dwell$surface - 1e-10)))
     if (length(wh) != 0) {
@@ -154,14 +154,14 @@ MakeMatrices <- function(forms, dat, min_dwell, series = FALSE, nint = 10000, br
 }
 
 #' construct predictor matrix
-#' @param model fitted gam model 
+#' @param model fitted gam model
 #' @param dat dataframe
 #' @param time grid
-#' @return model matrix for predicting over time grid 
+#' @return model matrix for predicting over time grid
 pred_mat_maker <- function(model, dat, ints){
   # storage
   newdat <- data.frame(time=ints)
-  
+
   # what covars do we need?
   covs <- as.character(attr(delete.response(terms(model)),
                             "variables"))[-1]
@@ -193,10 +193,10 @@ pred_mat_maker <- function(model, dat, ints){
 #' @param dat a \code{data.frame} with at least three columns named \code{dive} (dive durations), \code{surface} (surface durations), and \code{time} (start time of dive); all of these must be numeric.
 #' @param print if \code{TRUE}, useful output is printed
 #' @param min_dwell Minimum dwell time in a state. Useful if, for example, dives are only categorised as such if they are longer than a certain interval. Named list, needs to be in the same units as \code{time}, \code{surface} and \code{dive}.
-#' @param series if TRUE then series data, otherwise dive-by-dive data 
-#' @param rf if TRUE then fit a discrete random effect on dive 
-#' @param dt set time-step in integration, otherwise set to total_time / 10000 
-#' 
+#' @param series if TRUE then series data, otherwise dive-by-dive data
+#' @param rf if TRUE then fit a discrete random effect on dive
+#' @param dt set time-step in integration, otherwise set to total_time / 10000
+#'
 #' @return a CTMCdive model x: a list of the estimated results (\code{res}), variance matrix (\code{var}), fitted model returned from \code{optim} (\code{mod}), output from \code{sdreport} (\code{res}), design matrices (\code{Xs}), smoothing data (\code{sm}), formulae (\code{forms{), indices that divide par between dive and surface parameters (\code{len}), data (\code{dat}), indicators for smooths used (\code{lambda}), and model type (\code{model}).
 #' @export
 #' @importFrom stats delete.response model.matrix optim
@@ -204,28 +204,28 @@ pred_mat_maker <- function(model, dat, ints){
 #' @importFrom TMB MakeADFun sdreport
 #' @useDynLib ctmc_dive
 FitCTMCdive <- function(forms, dat, print = TRUE,
-                        min_dwell=list(dive=0, surface=0), 
-                        series = FALSE, 
+                        min_dwell=list(dive=0, surface=0),
+                        series = FALSE,
                         re = "none",
                         exp_time = NULL,
                         fixed_decay = FALSE,
-                        knots = NULL, 
-                        breaks = NULL, 
+                        knots = NULL,
+                        breaks = NULL,
                         dt = NULL) {
 
   ## Check series
   if ("start" %in% colnames(dat) & !series) warning("Did you mean to fit a series model? Series = FALSE but dat has a start column.")
-  
+
   ## Make design matrices and parameter vector
   if (print) cat("Computing design matrices.......")
-  
+
   ## Set time step
   if (is.null(dt)) {
     nint <- 10000
   } else {
     nint <- round(max(dat$time) / dt)
   }
-  
+
 
   # name that list
   names(forms) <- c(as.character(forms[[1]][[2]]),
@@ -250,23 +250,23 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
   ## Setup TMB parameter list
   tmb_parameters <- list(par_dive = par_dive,
                          par_surf = par_surf,
-                         log_kappa_dive = 0, 
-                         log_kappa_surf = 0, 
+                         log_kappa_dive = 0,
+                         log_kappa_surf = 0,
                          log_lambda_dive = rep(0, length(sm$S_dive_n)),
-                         log_lambda_surf = rep(0, length(sm$S_surface_n)), 
-                         log_rf_sd = rep(0, 2), 
-                         decay_dive = 0, 
+                         log_lambda_surf = rep(0, length(sm$S_surface_n)),
+                         log_rf_sd = rep(0, 2),
+                         decay_dive = 0,
                          decay_surf = 0)
-  
+
   # if there are smooths of dive or surface, set up the TMB
   # model xs correctly
   if (is.null(sm$S_dive)) {
     map <- c(map, list(log_lambda_dive = as.factor(NA),
                        s_dive = factor(NA)))
     tmb_parameters$s_dive <- 0
-    tmb_parameters$log_lambda_dive <- 0 
+    tmb_parameters$log_lambda_dive <- 0
     S_dive <- as(matrix(0, 1, 1), "sparseMatrix")
-    S_dive_n <- 0 
+    S_dive_n <- 0
     A_grid_dive <- matrix(1, ncol(sm$indD), 1)
   } else {
     S_dive <- sm$S_dive
@@ -279,7 +279,7 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
     map <- c(map, list(log_lambda_surf = as.factor(NA),
                        s_surf = factor(NA)))
     tmb_parameters$s_surf <- 0
-    tmb_parameters$log_lambda_surf <- 0 
+    tmb_parameters$log_lambda_surf <- 0
     S_surface <- as(matrix(0, 1, 1), "sparseMatrix")
     S_surface_n <- 0
     A_grid_surface <- matrix(1, ncol(sm$indS), 1)
@@ -290,13 +290,13 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
     random <- c(random, "s_surf")
     tmb_parameters$s_surf <- rep(0, ncol(sm$S_surface))
   }
-  
+
   # Discrete random effect
   tmb_parameters$rf_dive <- rep(0, nrow(dat))
   tmb_parameters$rf_surf <- rep(0, nrow(dat))
   if (re ==  "none") {
-    map <- c(map, list(log_rf_sd = factor(c(NA, NA)), 
-                       rf_dive = factor(rep(NA, nrow(dat))), 
+    map <- c(map, list(log_rf_sd = factor(c(NA, NA)),
+                       rf_dive = factor(rep(NA, nrow(dat))),
                        rf_surf = factor(rep(NA, nrow(dat)))))
     random2 <- NULL
   } else {
@@ -314,27 +314,27 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
                   S_dive_n = as.integer(S_dive_n),
                   S_surface = S_surface,
                   S_surface_n = as.integer(S_surface_n),
-                  include_smooths = 1, 
-                  re = switch(re, none = -1, ind = 1, corr = 2), 
+                  include_smooths = 1,
+                  re = switch(re, none = -1, ind = 1, corr = 2),
                   A_dive = sm$A_dive,
                   A_surf = sm$A_surf,
                   A_grid_surface = A_grid_surface,
                   A_grid_dive = A_grid_dive,
-                  W_dive = sm$W_dive, 
-                  W_surf = sm$W_surf, 
-                  W_grid_surf = sm$W_grid_surf, 
-                  W_grid_dive = sm$W_grid_dive, 
+                  W_dive = sm$W_dive,
+                  W_surf = sm$W_surf,
+                  W_grid_surf = sm$W_grid_surf,
+                  W_grid_dive = sm$W_grid_dive,
                   Xs_grid_surface = sm$Xs_grid_surface,
                   Xs_grid_dive = sm$Xs_grid_dive,
                   indD = sm$indD,
                   indS = sm$indS,
                   tindD = t(sm$indD),
-                  tindS = t(sm$indS), 
-                  weight_dive = rep(1, length(tmb_parameters$s_dive)), 
-                  weight_surf = rep(1, length(tmb_parameters$s_surf)), 
+                  tindS = t(sm$indS),
+                  weight_dive = rep(1, length(tmb_parameters$s_dive)),
+                  weight_surf = rep(1, length(tmb_parameters$s_surf)),
                   flag = 1L,
                   dt = sm$dt)
-  
+
   # Determine if exposure penalty to be used
   if (!is.null(exp_time)) {
     dive_terms <- sapply(sm$gam_dive$smooth, FUN = function(x){x$term})
@@ -349,7 +349,7 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
           sum(dat[[exp_time[jexp]]]*w)/sum(w)
         })
         tmb_dat$weight_dive[(csum[dive_wh]+1):(csum[dive_wh+1])] <- exptimes
-        # add shrinkage penalty 
+        # add shrinkage penalty
         Sold <- tmb_dat$S_dive[(csum[dive_wh]+1):csum[dive_wh+1], (csum[dive_wh]+1):csum[dive_wh+1]]
         #E <- eigen(Sold)
         #vals <- E$values
@@ -374,7 +374,7 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
         #vals[abs(vals) < 1e-10] <- 0.1 * min(abs(vals[vals > 1e-10]))
         #Snew <- E$vectors %*% diag(vals) %*% solve(E$vectors)
         #tmb_dat$S_surface[(csum[surf_wh]+1):csum[surf_wh+1], (csum[surf_wh]+1):csum[surf_wh+1]] <- Snew
-        #tmb_dat$S_surface[(csum[surf_wh]+1):csum[surf_wh+1], (csum[surf_wh]+1):csum[surf_wh+1]] <- Sold + 1e-16 
+        #tmb_dat$S_surface[(csum[surf_wh]+1):csum[surf_wh+1], (csum[surf_wh]+1):csum[surf_wh+1]] <- Sold + 1e-16
         #diag(tmb_dat$S_surface[(csum[surf_wh]+1):csum[surf_wh+1], (csum[surf_wh]+1):csum[surf_wh+1]]) <- diag(Sold) + 1
       } else {
          map$decay_surf <- factor(NA)
@@ -392,9 +392,9 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
   if (print) cat("Making AD fun.......")
   obj <- MakeADFun(tmb_dat, tmb_parameters, random = random, map = map,
                    hessian = TRUE, DLL = "ctmc_dive", silent=!print)
-  tmb_dat$include_smooths <- -1 
+  tmb_dat$include_smooths <- -1
   obj_full <- MakeADFun(tmb_dat, tmb_parameters, map = map,
-                        random = random2, 
+                        random = random2,
                         hessian = TRUE, DLL = "ctmc_dive", silent=!print)
   if(print) cat("done\n")
 
@@ -471,20 +471,20 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
               var = var,
               mod = mod,
               rep = rep,
-              vcov = vcov, 
+              vcov = vcov,
               llk_full = llk_full,
               Xs_dive = sm$Xs_dive,
               Xs_surface = sm$Xs_surface,
               sm = sm,
               forms = forms,
               len = len,
-              dat = dat, 
-              min_dwell = min_dwell, 
+              dat = dat,
+              min_dwell = min_dwell,
               series = series,
               fixed_decay = fixed_decay,
-              exp_time = exp_time, 
-              dt = dt, 
-              knots = knots, 
+              exp_time = exp_time,
+              dt = dt,
+              knots = knots,
               breaks = breaks)
   if(print) cat("done\n")
   class(ans) <- "CTMCdive"
@@ -510,10 +510,10 @@ summary.CTMCdive <- function(x, print = TRUE, ...) {
     cat("  ")
     print(x$forms[[2]])
     cat("\n")
-  
+
     cat("AIC:", AIC(x)$AIC,"\n")
     cat("\n")
-  
+
     cat(rep("-", 30), "\n")
     cat("DIVE INTENSITY\n")
     cat("\nFixed effects:\n")
@@ -555,7 +555,7 @@ summary.CTMCdive <- function(x, print = TRUE, ...) {
     cat("\n")
 
     cat(rep("-", 30), "\n")
-  
+
     cat("SURFACE INTENSITY\n")
     cat("\nFixed effects:\n")
     print(signif(x$res$surface, 4))
@@ -578,7 +578,7 @@ summary.CTMCdive <- function(x, print = TRUE, ...) {
       ssurface$EDF[i] <- EDF_f(X, S, lambda[i], Sn)
       starti <- starti + Sn
     }
-    
+
     ssurface$EDF <- signif(ssurface$EDF, 4)
     if(print) {
       cat("\nSmooth terms:\n")
@@ -586,7 +586,7 @@ summary.CTMCdive <- function(x, print = TRUE, ...) {
       cat("\n")
     }
   }
-  
+
   if(print) {
     cat("\nkappa: ",
         signif(exp(x$rep$par.fixed[names(x$rep$par.fixed) == "log_kappa_surf"]), 4))
@@ -615,13 +615,13 @@ predict.CTMCdive <- function(x, newdata = NULL, ...) {
   par_dive <- par[1:len[1]]
   par_surf <- par[(len[1] + 1):(len[1] + len[2])]
 
-  # correct data for tag 
+  # correct data for tag
   if (x$series) {
-    dat <- x$dat[x$dat$start == 1,] 
+    dat <- x$dat[x$dat$start == 1,]
   } else {
     dat <- x$dat
   }
-  
+
   if (is.null(newdata)) {
     # linear predictors
     lambda_dive <- x$sm$Xs_grid_dive %*% par_dive
@@ -643,11 +643,11 @@ predict.CTMCdive <- function(x, newdata = NULL, ...) {
     kappa_surf <- exp(log_kappa_surf)
     lambda_dive <- kappa_dive * lambda_dive + log_kappa_dive
     lambda_surf <- kappa_surf * lambda_surf + log_kappa_surf
-    from <- 1 
+    from <- 1
     to <- nrow(dat)
   } else {
     lambda_dive <- newdata$lambda_dive
-    lambda_surf <- newdata$lambda_surf 
+    lambda_surf <- newdata$lambda_surf
     diveI <- exp(lambda_dive)
     surfI <- exp(lambda_surf)
     kappa_dive <- newdata$kappa_dive
@@ -664,7 +664,7 @@ predict.CTMCdive <- function(x, newdata = NULL, ...) {
   for (i in from:to) {
     nearest_int_time <- which.min((ints - dat$time[i])^2)
     t <- ints[nearest_int_time]
-    Ldive <- lambda_dive[ints > t + dat$dive[i]] + (kappa_dive - 1) * 
+    Ldive <- lambda_dive[ints > t + dat$dive[i]] + (kappa_dive - 1) *
       log(ints[ints > t + dat$dive[i]] - t - dat$dive[i])
     Ldive <- cumsum(exp(Ldive))
     Lsurf <- lambda_surf[ints > t] + (kappa_surf - 1) * log(ints[ints > t] - t)
@@ -678,18 +678,18 @@ predict.CTMCdive <- function(x, newdata = NULL, ...) {
     if (sum(ints > t) > 1) {
       Ssurf_approx <- approxfun(c(0, ints[ints > t] - t), c(1, Ssurf))
       r_dive[i] <- qnorm(Ssurf_approx(dat$dive[i]))
-    } 
+    }
     if (sum(ints > t + dat$dive[i])) {
       Sdive_approx <- approxfun(c(0, ints[ints > t + dat$dive[i]]) - t - dat$dive[i], c(1, Sdive))
       r_surf[i] <- qnorm(Sdive_approx(dat$surface[i]))
     }
   }
   # return predictions
-  res <- list(surface = exp_surf[from:to], 
-              dive = exp_dive[from:to], 
-              diveI = diveI, 
-              surfI = surfI, 
-              rdive = r_dive[from:to], 
+  res <- list(surface = exp_surf[from:to],
+              dive = exp_dive[from:to],
+              diveI = diveI,
+              surfI = surfI,
+              rdive = r_dive[from:to],
               rsurf = r_surf[from:to])
   return(res)
 }
@@ -720,9 +720,9 @@ plot.CTMCdive <- function(x, quant = 1, pick = NULL, pred = NULL, xlim = NULL, s
   }
   # get predicted values
   if (is.null(pred)) pred <- predict(x)
-  # correct data for tag 
+  # correct data for tag
   if (x$series) {
-    dat <- x$dat[x$dat$start == 1,] 
+    dat <- x$dat[x$dat$start == 1,]
   } else {
     dat <- x$dat
   }
@@ -812,7 +812,7 @@ get_samples <- function(mod, n=200){
 #' @export
 logLik.CTMCdive <- function(x, full = TRUE, ...) {
   if (full) {
-    val <- x$llk_full 
+    val <- x$llk_full
   } else {
     val <- -x$mod$objective
   }
@@ -829,7 +829,7 @@ logLik.CTMCdive <- function(x, full = TRUE, ...) {
 #' @param x a fitted detection function x
 #' @param k penalty per parameter to be used; the default \code{k = 2} is the "classical" AIC
 #' @param \dots optionally more fitted model xs.
-#' @author David L Miller, Richard Glennie 
+#' @author David L Miller, Richard Glennie
 #' @export
 #' @importFrom stats logLik
 AIC.CTMCdive <- function(x, ..., k=2){
@@ -842,31 +842,31 @@ AIC.CTMCdive <- function(x, ..., k=2){
   for(i in seq_along(models)){
     this_mod <- models[[i]]
     ll <- this_mod$llk_full
-    
-    # get joint covariance 
+
+    # get joint covariance
     vcov <- this_mod$vcov
     vcov_nms <- colnames(this_mod$rep$jointPrecision)
-    
+
     # dive component
     vdive <- vcov[vcov_nms == "s_dive", vcov_nms == "s_dive"]
     if (!is.null(vdive)) {
       Xdive <- this_mod$sm$A_dive
-      Idive <- t(Xdive) %*% Xdive 
+      Idive <- t(Xdive) %*% Xdive
       dive_edf <- sum(diag(vdive %*% Idive))
     } else {
-      dive_edf <- 0 
+      dive_edf <- 0
     }
-    
+
     # surface component
     vsurf <- vcov[vcov_nms == "s_surf", vcov_nms == "s_surf"]
     if (!is.null(vsurf)) {
       Xsurf <- this_mod$sm$A_surf
-      Isurf <- t(Xsurf) %*% Xsurf 
+      Isurf <- t(Xsurf) %*% Xsurf
       surface_edf <- sum(diag(vsurf %*% Isurf))
     } else {
       surface_edf <- 0
     }
-    
+
     # DF for fixed effects (not smoopars)
     parnms <- names(this_mod$rep$par.fixed)
     fixed_edf <- sum(!(parnms %in% c("log_lambda_dive","log_lambda_surf", "decay_dive", "decay_surf")))
@@ -895,7 +895,7 @@ AIC.CTMCdive <- function(x, ..., k=2){
 #' @param x a fitted detection function x
 #' @param k penalty per parameter to be used; the default \code{k = 2} is the "classical" AIC
 #' @param \dots optionally more fitted model xs.
-#' @author David L Miller, Richard Glennie 
+#' @author David L Miller, Richard Glennie
 #' @export
 #' @importFrom stats logLik
 AIC.CTMCdiveList <- function(x, ..., k=2){
@@ -913,7 +913,7 @@ AIC.CTMCdiveList <- function(x, ..., k=2){
   rownames(aics) <- fullnms
   return(aics)
 }
-  
+
 #' Akaike's An Information Criterion for CTMCdive models
 #'
 #' Calculate the AIC from a fitted model.
@@ -925,16 +925,16 @@ AIC.CTMCdiveList <- function(x, ..., k=2){
 #' @export
 #' @importFrom stats logLik
 AIC0.CTMCdive <- function(x, ..., k=2){
-  
+
   # get the models
   models <- list(x, ...)
-  
+
   # build the table
   aics <- matrix(NA, nrow=length(models), ncol=2)
   for(i in seq_along(models)){
     this_mod <- models[[i]]
     ll <- this_mod$llk_full
-    
+
     # dive component
     dive_lambda <- exp(this_mod$rep$par.fixed[grepl("^log_lambda_dive", names(this_mod$rep$par.fixed))])
     dive_edf <- EDF_f(this_mod$sm$A_dive, this_mod$sm$S_dive,
@@ -948,7 +948,7 @@ AIC0.CTMCdive <- function(x, ..., k=2){
       (length(dive_lambda) + length(surface_lambda))
     # total
     total_edf <- dive_edf + surface_edf + fixed_edf
-    
+
     aics[i, 1] <- total_edf
     aics[i, 2] <- -2*ll + k*aics[i, 1]
   }
@@ -958,20 +958,20 @@ AIC0.CTMCdive <- function(x, ..., k=2){
   # add row names
   call <- match.call(expand.dots=TRUE)
   rownames(aics) <- as.character(call)[-1]
-  
+
   return(aics)
-  
+
 }
 
 #' EDF for smooth terms = trace(F)
 #'
-#' @param X design matrix 
-#' @param S smoothing matrix 
-#' @param lambda smoothing parameter 
-#' @param Sn dimension of smoothing matrix 
+#' @param X design matrix
+#' @param S smoothing matrix
+#' @param lambda smoothing parameter
+#' @param Sn dimension of smoothing matrix
 #'
 #' @return trace of F = (Xt X + sp*S)^-1 Xt X
-#' @importFrom Matrix t solve diag 
+#' @importFrom Matrix t solve diag
 EDF_f <- function(X, S, lambda, Sn){
 
   if(length(lambda)==0){
@@ -992,13 +992,15 @@ EDF_f <- function(X, S, lambda, Sn){
 }
 
 
-#' Estimate exposure effect for dive and surface intensity 
+#' Estimate exposure effect for dive and surface intensity
 #'
-#' @param mod fitted CTMC model 
-#' @param predgrid data frame with same columns as data but with a user-defined time grid to estimate the effect over 
-#'                 must have a column which is 1 when exposure is one and zero otherwise
-#' @param exp name of exposure indicator 
-#' @parama val column name of variable used as magnitude for exposure (e.g. seconds since) if time not used as smooth
+#' @param mod fitted CTMC model
+#' @param predgrid data frame with same columns as data but with a user-defined
+#' time grid to estimate the effect over must have a column which is 1 when
+#' exposure is one and zero otherwise
+#' @param exp name of exposure indicator
+#' @param val column name of variable used as magnitude for exposure (e.g.
+#' seconds since) if time not used as smooth
 #' @param nsims number of posterior simulations, default is 1000
 #'
 #' @return list with dive and surface elements which each contain the mean exposure effect and the credible interval bands
@@ -1018,8 +1020,8 @@ GetExposureEffonIntensity <- function(mod, predgrid, basedat, nsims = 1000) {
   simbasedive <- exp(Xdivebase %*% betadive)
   simsurf <- exp(Xsurf %*% betasurf)
   simbasesurf <- exp(Xbasesurf %*% betasurf)
-  simdiveexp <- (simdive - simbasedive) 
-  simsurfexp <- (simsurf - simbasesurf)  
+  simdiveexp <- (simdive - simbasedive)
+  simsurfexp <- (simsurf - simbasesurf)
   dive <- surf <- NULL
   dive$mean <- rowMeans(simdiveexp)
   dive$ci <- apply(simdiveexp, 1, quantile, prob = c(0.025, 0.975))
@@ -1029,38 +1031,38 @@ GetExposureEffonIntensity <- function(mod, predgrid, basedat, nsims = 1000) {
   surf$sims <- simsurfexp
   res <- list(dive = dive, surf = surf, time = dat$time[keep])
   class(res) <- "ExposureEffectIntensity"
-  return(res) 
+  return(res)
 }
 
-#' Get exposure effect on predicted durations 
+#' Get exposure effect on predicted durations
 #'
 #' @param mod fitted CTMCdive model
-#' @param exp_var name of variable(s) non-zero when exposure occurs 
-#' @param nsims number of posterior simulations 
+#' @param exp_var name of variable(s) non-zero when exposure occurs
+#' @param nsims number of posterior simulations
 #'
-#' @return simulations of difference between exposure and baseline models 
+#' @return simulations of difference between exposure and baseline models
 #' @export
 GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL, nsims = 200) {
-  # get parameters 
+  # get parameters
   rand <- mod$rep$par.random
   fixed <- mod$rep$par.fixed
-  # create baseline data 
+  # create baseline data
   dat <- mod$dat
   basedat <- dat
-  basedat[[exp_var]] <- base_val 
-  # create design matrices 
+  basedat[[exp_var]] <- base_val
+  # create design matrices
   basedive <- pred_mat_maker(model = mod$sm$gam_dive, dat = basedat, ints = mod$sm$ints)
   basesurf <- pred_mat_maker(model = mod$sm$gam_surface, dat = basedat, ints = mod$sm$ints)
   mdive <- cbind(mod$sm$Xs_grid_dive, mod$sm$A_grid_dive)
   msurf <- cbind(mod$sm$Xs_grid_surface, mod$sm$A_grid_surface)
-  # get parameters and their uncertainty 
+  # get parameters and their uncertainty
   beta <- c(mod$rep$par.fixed, mod$rep$par.random)
   nms <- names(beta)
   V <- solve(mod$rep$jointPrecision)
   if(is.null(exp_val)) {
     keep <- dat[[exp_var]] != base_val
   } else {
-    keep <- dat[[exp_var]] == exp_val 
+    keep <- dat[[exp_var]] == exp_val
   }
   from <- min(which(keep))
   to <- max(which(keep))
@@ -1068,7 +1070,7 @@ GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL, n
   get_eff <- function(beta, nms, means = FALSE) {
     betadive <- beta[nms %in% c("par_dive", "s_dive")]
     betasurf <- beta[nms %in% c("par_surf", "s_surf")]
-    # compute kappa parameters 
+    # compute kappa parameters
     logkappadive <- beta[nms %in% c("log_kappa_dive")]
     logkappasurf <- beta[nms %in% c("log_kappa_surf")]
     kappadive <- exp(logkappadive)
@@ -1077,15 +1079,15 @@ GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL, n
     base_surfI <- basesurf %*% betasurf
     diveI <- mdive %*% betadive
     surfI <- msurf %*% betasurf
-    basepred <- predict(mod, newdata = list(lambda_dive = kappadive * base_diveI + logkappadive, 
-                                            lambda_surf = kappasurf * base_surfI + logkappasurf, 
-                                            kappa_dive = kappadive, 
-                                            kappa_surf = kappasurf, 
-                                            from = from, 
+    basepred <- predict(mod, newdata = list(lambda_dive = kappadive * base_diveI + logkappadive,
+                                            lambda_surf = kappasurf * base_surfI + logkappasurf,
+                                            kappa_dive = kappadive,
+                                            kappa_surf = kappasurf,
+                                            from = from,
                                             to = to))
-    pred <- predict(mod, newdata = list(lambda_dive = kappadive * diveI + logkappadive, 
-                                        lambda_surf = kappasurf * surfI + logkappasurf, 
-                                        kappa_dive = kappadive, 
+    pred <- predict(mod, newdata = list(lambda_dive = kappadive * diveI + logkappadive,
+                                        lambda_surf = kappasurf * surfI + logkappasurf,
+                                        kappa_dive = kappadive,
                                         kappa_surf = kappasurf,
                                         from = from,
                                         to = to))
@@ -1098,46 +1100,46 @@ GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL, n
   }
   # simulate parameters
   ss <- get_samples(mod, nsims)
-  # compute durations for each sample 
+  # compute durations for each sample
   sdurs <- apply(ss, 1, FUN = get_eff, nms = colnames(ss), means = TRUE)
   diff <- sapply(sdurs, FUN = function(x){x$mean})
   base <- sapply(sdurs, FUN = function(x){x$base})
-  # get mean and CIs 
+  # get mean and CIs
   nkeep <- to - from + 1
-  dive <- list(mean = rowMeans(diff[1:nkeep,,drop=FALSE]), 
-               ci = apply(diff[1:nkeep,,drop=FALSE], 1, quantile, prob = c(0.025, 0.975)), 
-               pred = sapply(sdurs, FUN = function(x){x$pred$dive}), 
+  dive <- list(mean = rowMeans(diff[1:nkeep,,drop=FALSE]),
+               ci = apply(diff[1:nkeep,,drop=FALSE], 1, quantile, prob = c(0.025, 0.975)),
+               pred = sapply(sdurs, FUN = function(x){x$pred$dive}),
                base = sapply(sdurs, FUN = function(x){x$base$dive}))
-  surf <- list(mean = rowMeans(diff[-(1:nkeep),,drop=FALSE]), 
-               ci = apply(diff[-(1:nkeep),,drop=FALSE], 1, quantile, prob = c(0.025, 0.975)), 
-               pred = sapply(sdurs, FUN = function(x){x$pred$surface}), 
+  surf <- list(mean = rowMeans(diff[-(1:nkeep),,drop=FALSE]),
+               ci = apply(diff[-(1:nkeep),,drop=FALSE], 1, quantile, prob = c(0.025, 0.975)),
+               pred = sapply(sdurs, FUN = function(x){x$pred$surface}),
                base = sapply(sdurs, FUN = function(x){x$base$surface}))
   res <- list(dive = dive, surf = surf, time = dat$time[from:to])
   class(res) <- "ExposureEffect"
-  return(res) 
+  return(res)
 }
 
 
 
-#' Expand covariates across a time grid 
+#' Expand covariates across a time grid
 #'
 #' @param dat data frame with covariates in columns and time column
 #' @param tgrid a vector with new time grid
 #'
-#' @return a expanded data frame where covariates are copied from nearest time point to grid point 
+#' @return a expanded data frame where covariates are copied from nearest time point to grid point
 #' @export
 ExpandCovs <- function(dat, tgrid) {
   subdat <- dat[dat$time > min(tgrid) & dat$time <= max(tgrid),]
   freq <- as.numeric(table(sapply(tgrid, FUN = function(x) which.min(abs(x - subdat$time)))))
-  predgrid <- subdat[rep(seq(nrow(subdat)), freq), ] 
+  predgrid <- subdat[rep(seq(nrow(subdat)), freq), ]
   predgrid$time <- tgrid
   return(predgrid)
 }
 
-#' Plot exposure effect 
+#' Plot exposure effect
 #'
 #' @param expeff exposure effect estimates from GetExposureEff or GetExposureEffIntensity function
-#' @param pick if "both" (default) then for dive and surface, otherwise for "dive" or "surface" 
+#' @param pick if "both" (default) then for dive and surface, otherwise for "dive" or "surface"
 #'
 #' @return plots of exposure effect with vertical line at point where no evidence exposure has effect from baseline
 #' @export
@@ -1160,7 +1162,7 @@ plotExposureEffect <- function(expeff, pick = "all") {
     points(expeff$time, expeff$dive$mean, col = cols, pch = 19)
     #arrows(expeff$time, expeff$dive$ci[1,], expeff$time, expeff$dive$ci[2,], length = 0.05, code = 3, angle = 90)
     abline(h = 0, col = "red", lty = "dotted", lwd = 1.5)
-  } 
+  }
   if (pick == "surface" | pick == "all") {
     sig <- ifelse(expeff$surf$mean > 0, expeff$surf$ci[1,] > 1e-10, expeff$surf$ci[2,] < -1e-10)
     cols <- ifelse(sig, "blue", "black")
@@ -1176,21 +1178,21 @@ plotExposureEffect <- function(expeff, pick = "all") {
   }
 }
 
-#' Add or remove terms from a CTMC model and fit the new model 
+#' Add or remove terms from a CTMC model and fit the new model
 #'
-#' @param mod model to be amended 
-#' @param change change to formula to make, see ?update.formula 
+#' @param mod model to be amended
+#' @param change change to formula to make, see ?update.formula
 #' @param which which formula to update, 1 = dive, 2 = surface; if which = 0
 #'   then three models are fit where change is made to each formula individually
-#'   and then to both, an AIC table is printed. 
+#'   and then to both, an AIC table is printed.
 #'
 #' @return fitted model if which = 1,2 or list of three fitted models if which = 0
 #' @export
 update.CTMCdive <- function(mod, change, which = 0, print = FALSE) {
   if (which == 0) {
     ms <- vector(mode = "list", length = 3)
-    f <- mod$forms  
-    f1 <- f 
+    f <- mod$forms
+    f1 <- f
     f1[["dive"]] <- update(f[["dive"]], change)
     dive <- ms[[1]] <- try(FitCTMCdive(f1, mod$dat, min_dwell = mod$min_dwell, series = mod$series, dt = mod$dt, fixed_decay = mod$fixed_decay, exp_time = mod$exp_time, print = print, knots = mod$knots, breaks = mod$breaks))
     f1 <- f
@@ -1211,16 +1213,17 @@ update.CTMCdive <- function(mod, change, which = 0, print = FALSE) {
   }
 }
 
-#' Formala translated to a character 
-#' Borrow from formula.tools session 
-#'  Christopher Brown (2018). formula.tools: Programmatic Utilities for Manipulating Formulas,
-#'  Expressions, Calls, Assignments and Other R Objects. R package version 1.7.1.
-#'  https://CRAN.R-project.org/package=formula.tools
+#' Formula translated to a character
 #'
-#' @param x 
-#' @param ... 
+#' Borrowed from formula.tools session
+#' @author Christopher Brown (2018). formula.tools: Programmatic Utilities for
+#' Manipulating Formulas, Expressions, Calls, Assignments and Other R Objects.
+#' R package version 1.7.1.  https://CRAN.R-project.org/package=formula.tools
 #'
-#' @return character 
+#' @param x
+#' @param ...
+#'
+#' @return character
 #' @export
 for2char <- function (x, ...) {
   form <- paste(deparse(x), collapse = " ")

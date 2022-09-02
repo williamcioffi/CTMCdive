@@ -2,26 +2,21 @@
 % Please edit documentation in R/ctmc_dive.R
 \name{for2char}
 \alias{for2char}
-\title{Formala translated to a character 
-Borrow from formula.tools session 
- Christopher Brown (2018). formula.tools: Programmatic Utilities for Manipulating Formulas,
- Expressions, Calls, Assignments and Other R Objects. R package version 1.7.1.
- https://CRAN.R-project.org/package=formula.tools}
+\title{Formula translated to a character}
 \usage{
 for2char(x, ...)
 }
 \arguments{
-\item{x}{}
-
 \item{...}{}
 }
 \value{
 character
 }
 \description{
-Formala translated to a character 
-Borrow from formula.tools session 
- Christopher Brown (2018). formula.tools: Programmatic Utilities for Manipulating Formulas,
- Expressions, Calls, Assignments and Other R Objects. R package version 1.7.1.
- https://CRAN.R-project.org/package=formula.tools
+Borrowed from formula.tools session
+}
+\author{
+Christopher Brown (2018). formula.tools: Programmatic Utilities for
+Manipulating Formulas, Expressions, Calls, Assignments and Other R Objects.
+R package version 1.7.1.  https://CRAN.R-project.org/package=formula.tools
 }
