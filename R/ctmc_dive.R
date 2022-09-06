@@ -1191,15 +1191,28 @@ plotExposureEffect <- function(expeff, pick = "all") {
 update.CTMCdive <- function(mod, change, which = 0, print = FALSE) {
   if (which == 0) {
     ms <- vector(mode = "list", length = 3)
+
     f <- mod$forms
     f1 <- f
     f1[["dive"]] <- update(f[["dive"]], change)
-    dive <- ms[[1]] <- try(FitCTMCdive(f1, mod$dat, min_dwell = mod$min_dwell, series = mod$series, dt = mod$dt, fixed_decay = mod$fixed_decay, exp_time = mod$exp_time, print = print, knots = mod$knots, breaks = mod$breaks))
+    dive <- ms[[1]] <- try(FitCTMCdive(f1, mod$dat, min_dwell = mod$min_dwell,
+      series = mod$series, dt = mod$dt, fixed_decay = mod$fixed_decay,
+      exp_time = mod$exp_time, print = print, knots = mod$knots,
+      breaks = mod$breaks))
+
     f1 <- f
     f1[["surface"]] <- update(f[["surface"]], change)
-    surf <- ms[[2]] <- try(FitCTMCdive(f1, mod$dat, min_dwell = mod$min_dwell, series = mod$series, dt = mod$dt, fixed_decay = mod$fixed_decay, exp_time = mod$exp_time, print = print, knots = mod$knots, breaks = mod$breaks))
+    surf <- ms[[2]] <- try(FitCTMCdive(f1, mod$dat, min_dwell = mod$min_dwell,
+      series = mod$series, dt = mod$dt, fixed_decay = mod$fixed_decay,
+      exp_time = mod$exp_time, print = print, knots = mod$knots,
+      breaks = mod$breaks))
+
     f1 <- lapply(f, FUN = function(fi) {update(fi, change)})
-    both <- ms[[3]] <- try(FitCTMCdive(f1, mod$dat, min_dwell = mod$min_dwell, series = mod$series, dt = mod$dt, fixed_decay = mod$fixed_decay, exp_time = mod$exp_time, print = print, knots = mod$knots, breaks = mod$breaks))
+    both <- ms[[3]] <- try(FitCTMCdive(f1, mod$dat, min_dwell = mod$min_dwell,
+      series = mod$series, dt = mod$dt, fixed_decay = mod$fixed_decay,
+      exp_time = mod$exp_time, print = print, knots = mod$knots,
+      breaks = mod$breaks))
+
     aics <- try(AIC(mod, dive, surf, both))
     names(ms) <- c("dive", "surf", "both")
     print(aics)
@@ -1208,7 +1221,9 @@ update.CTMCdive <- function(mod, change, which = 0, print = FALSE) {
   } else {
     f <- mod$forms
     f[[which]] <- update(f[[which]], change)
-    m <- FitCTMCdive(f, mod$dat, min_dwell = mod$min_dwell, series = mod$series, dt = mod$dt, fixed_decay = mod$fixed_decay, exp_time = mod$exp_time, print = print, knots = mod$knots, breaks = mod$breaks)
+    m <- FitCTMCdive(f, mod$dat, min_dwell = mod$min_dwell, series = mod$series,
+      dt = mod$dt, fixed_decay = mod$fixed_decay, exp_time = mod$exp_time,
+      print = print, knots = mod$knots, breaks = mod$breaks)
     return(m)
   }
 }
