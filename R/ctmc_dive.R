@@ -826,7 +826,7 @@ logLik.CTMCdive <- function(x, full = TRUE, ...) {
 #'
 #' Calculate the AIC from a fitted model.
 #'
-#' @param x a fitted detection function x
+#' @param x a fitted model object
 #' @param k penalty per parameter to be used; the default \code{k = 2} is the "classical" AIC
 #' @param \dots optionally more fitted model xs.
 #' @author David L Miller, Richard Glennie
@@ -1191,6 +1191,7 @@ plotExposureEffect <- function(expeff, pick = "all") {
 update.CTMCdive <- function(mod, change, which = 0, print = FALSE) {
   if (which == 0) {
     ms <- vector(mode = "list", length = 3)
+    allnames <- c("dive", "surf", "both")
 
     f <- mod$forms
     f1 <- f
@@ -1200,6 +1201,12 @@ update.CTMCdive <- function(mod, change, which = 0, print = FALSE) {
       exp_time = mod$exp_time, print = print, knots = mod$knots,
       breaks = mod$breaks))
 
+
+if("try-error" %in% class(dive)){
+  ms[[1]] <- NULL
+  allnames <- allnames[-1]
+}
+
     f1 <- f
     f1[["surface"]] <- update(f[["surface"]], change)
     surf <- ms[[2]] <- try(FitCTMCdive(f1, mod$dat, min_dwell = mod$min_dwell,
@@ -1207,16 +1214,25 @@ update.CTMCdive <- function(mod, change, which = 0, print = FALSE) {
       exp_time = mod$exp_time, print = print, knots = mod$knots,
       breaks = mod$breaks))
 
+if("try-error" %in% class(surf)){
+  ms[[2]] <- NULL
+  allnames <- allnames[-2]
+}
     f1 <- lapply(f, FUN = function(fi) {update(fi, change)})
     both <- ms[[3]] <- try(FitCTMCdive(f1, mod$dat, min_dwell = mod$min_dwell,
       series = mod$series, dt = mod$dt, fixed_decay = mod$fixed_decay,
       exp_time = mod$exp_time, print = print, knots = mod$knots,
       breaks = mod$breaks))
 
-    aics <- try(AIC(mod, dive, surf, both))
-    names(ms) <- c("dive", "surf", "both")
-    print(aics)
+if("try-error" %in% class(both)){
+  ms[[3]] <- NULL
+  allnames <- allnames[-3]
+}
+
+    names(ms) <- 
     class(ms) <- "CTMCdiveList"
+    aics <- AIC(ms)
+    print(aics)
     return(ms)
   } else {
     f <- mod$forms
