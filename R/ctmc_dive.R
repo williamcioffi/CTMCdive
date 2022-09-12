@@ -1229,7 +1229,7 @@ if("try-error" %in% class(both)){
   allnames <- allnames[-3]
 }
 
-    names(ms) <- 
+    names(ms) <- allnames
     class(ms) <- "CTMCdiveList"
     aics <- AIC(ms)
     print(aics)
