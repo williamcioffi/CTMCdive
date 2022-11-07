@@ -18,11 +18,6 @@ MakeMatrices <- function(forms, dat, min_dwell, series = FALSE, nint = 10000, br
   # results list
   res <- list()
 
-  # work-around absolutely derranged Matrix behaviour
-  # they can't stop me
-  as_dgTMatrix <- function(x){
-    as(as(as(x, "dMatrix"), "generalMatrix"), "TsparseMatrix")
-  }
 
   ## dive model
   # GAM setup
@@ -1270,3 +1265,8 @@ for2char <- function (x, ...) {
 
 
 
+# work-around absolutely derranged Matrix behaviour
+# they can't stop me
+as_dgTMatrix <- function(x){
+  as(as(as(x, "dMatrix"), "generalMatrix"), "TsparseMatrix")
+}
