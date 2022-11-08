@@ -1043,19 +1043,23 @@ GetExposureEffonIntensity <- function(mod, predgrid, basedat, nsims = 1000) {
 #'
 #' @return simulations of difference between exposure and baseline models
 #' @export
-GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL, nsims = 200) {
+GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL,
+                           nsims = 200) {
   # get parameters
   rand <- mod$rep$par.random
   fixed <- mod$rep$par.fixed
+
   # create baseline data
   dat <- mod$dat
   basedat <- dat
   basedat[[exp_var]] <- base_val
+
   # create design matrices
   basedive <- pred_mat_maker(model = mod$sm$gam_dive, dat = basedat, ints = mod$sm$ints)
   basesurf <- pred_mat_maker(model = mod$sm$gam_surface, dat = basedat, ints = mod$sm$ints)
   mdive <- cbind(mod$sm$Xs_grid_dive, mod$sm$A_grid_dive)
   msurf <- cbind(mod$sm$Xs_grid_surface, mod$sm$A_grid_surface)
+
   # get parameters and their uncertainty
   beta <- c(mod$rep$par.fixed, mod$rep$par.random)
   nms <- names(beta)
@@ -1067,10 +1071,12 @@ GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL, n
   }
   from <- min(which(keep))
   to <- max(which(keep))
+
   # function to compute exposure effect
   get_eff <- function(beta, nms, means = FALSE) {
     betadive <- beta[nms %in% c("par_dive", "s_dive")]
     betasurf <- beta[nms %in% c("par_surf", "s_surf")]
+
     # compute kappa parameters
     logkappadive <- beta[nms %in% c("log_kappa_dive")]
     logkappasurf <- beta[nms %in% c("log_kappa_surf")]
@@ -1080,12 +1086,13 @@ GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL, n
     base_surfI <- basesurf %*% betasurf
     diveI <- mdive %*% betadive
     surfI <- msurf %*% betasurf
-    basepred <- predict(mod, newdata = list(lambda_dive = kappadive * base_diveI + logkappadive,
-                                            lambda_surf = kappasurf * base_surfI + logkappasurf,
-                                            kappa_dive = kappadive,
-                                            kappa_surf = kappasurf,
-                                            from = from,
-                                            to = to))
+    basepred <- predict(mod,
+                        newdata = list(lambda_dive = kappadive * base_diveI + logkappadive,
+                                       lambda_surf = kappasurf * base_surfI + logkappasurf,
+                                       kappa_dive = kappadive,
+                                       kappa_surf = kappasurf,
+                                       from = from,
+                                       to = to))
     pred <- predict(mod, newdata = list(lambda_dive = kappadive * diveI + logkappadive,
                                         lambda_surf = kappasurf * surfI + logkappasurf,
                                         kappa_dive = kappadive,
@@ -1099,12 +1106,15 @@ GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL, n
     }
     return(res)
   }
+
   # simulate parameters
   ss <- get_samples(mod, nsims)
+
   # compute durations for each sample
   sdurs <- apply(ss, 1, FUN = get_eff, nms = colnames(ss), means = TRUE)
   diff <- sapply(sdurs, FUN = function(x){x$mean})
   base <- sapply(sdurs, FUN = function(x){x$base})
+
   # get mean and CIs
   nkeep <- to - from + 1
   dive <- list(mean = rowMeans(diff[1:nkeep,,drop=FALSE]),
@@ -1268,5 +1278,9 @@ for2char <- function (x, ...) {
 # work-around absolutely derranged Matrix behaviour
 # they can't stop me
 as_dgTMatrix <- function(x){
-  as(as(as(x, "dMatrix"), "generalMatrix"), "TsparseMatrix")
+  if(packageVersion("Matrix") < numeric_version("1.5.1")){
+    as(x, "sparseMatrix")
+  }else{
+    as(as(as(x, "dMatrix"), "generalMatrix"), "TsparseMatrix")
+  }
 }
