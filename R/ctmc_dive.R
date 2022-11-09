@@ -418,8 +418,15 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
   # want to return the full vcov (well, precision)
   rep <- sdreport(obj, getJointPrecision=TRUE)
   # let's invert to get variance
-  if(!is.null(rep$jointPrecision)) {
-    vcov <- solve(rep$jointPrecision)
+  if(!is.null(rep$jointPrecision) && !any(is.na(rep$jointPrecision))) {
+    vcov <- try(solve(rep$jointPrecision))
+    if(inherits(vcov, "try-error")){
+      # if the solve() fails, do a Moore-Penrose pseudo-inverse
+      ee <- try(eigen(rep$jointPrecision))
+      if(!inherits(vcov, "try-error")){
+        vcov <- ee$vector %*% diag(1/ee$value) %*% t(ee$vector)
+      }
+    }
   } else {
     vcov <- NULL
   }
