@@ -418,18 +418,7 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
   # want to return the full vcov (well, precision)
   rep <- sdreport(obj, getJointPrecision=TRUE)
   # let's invert to get variance
-  if(!is.null(rep$jointPrecision) && !any(is.na(rep$jointPrecision))) {
-    vcov <- try(solve(rep$jointPrecision), silent=TRUE)
-    if(inherits(vcov, "try-error")){
-      # if the solve() fails, do a Moore-Penrose pseudo-inverse
-      ee <- try(eigen(rep$jointPrecision), silent=TRUE)
-      if(!inherits(vcov, "try-error")){
-        vcov <- ee$vector %*% diag(1/ee$value) %*% t(ee$vector)
-      }
-    }
-  } else {
-    vcov <- NULL
-  }
+  vcov <- safe_invert(rep$jointPrecision)
 
   est <- rep$par.fixed
   var <- rep$cov.fixed
@@ -798,7 +787,7 @@ get_samples <- function(mod, n=200){
   prec <- prec[!grepl("decay_", colnames(prec)),
                !grepl("decay_", colnames(prec)), drop=FALSE]
   # solve to get variance-covariance matrix
-  vc <- as.matrix(solve(prec))
+  vc <- safe_invert(prec)
 
   # get pars
   pars <- c(mod$rep$par.fixed, mod$rep$par.random)
@@ -1070,7 +1059,7 @@ GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL,
   # get parameters and their uncertainty
   beta <- c(mod$rep$par.fixed, mod$rep$par.random)
   nms <- names(beta)
-  V <- solve(mod$rep$jointPrecision)
+  V <- safe_invert(mod$rep$jointPrecision)
   if(is.null(exp_val)) {
     keep <- dat[[exp_var]] != base_val
   } else {
@@ -1290,4 +1279,22 @@ as_dgTMatrix <- function(x){
   }else{
     as(as(as(x, "dMatrix"), "generalMatrix"), "TsparseMatrix")
   }
+}
+
+# safely invert a matrix
+# falls back to pseudo-inverse when necessary
+safe_invert <- function(X){
+  if(!is.null(X) && !any(is.na(X))) {
+    vcov <- try(solve(X), silent=TRUE)
+    if(inherits(vcov, "try-error")){
+      # if the solve() fails, do a Moore-Penrose pseudo-inverse
+      ee <- try(eigen(X), silent=TRUE)
+      if(!inherits(ee, "try-error")){
+        vcov <- ee$vector %*% diag(1/ee$value) %*% t(ee$vector)
+      }
+    }
+  } else {
+    vcov <- NULL
+  }
+  return(vcov)
 }
