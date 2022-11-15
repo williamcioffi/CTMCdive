@@ -1051,8 +1051,10 @@ GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL,
   basedat[[exp_var]] <- base_val
 
   # create design matrices
-  basedive <- pred_mat_maker(model = mod$sm$gam_dive, dat = basedat, ints = mod$sm$ints)
-  basesurf <- pred_mat_maker(model = mod$sm$gam_surface, dat = basedat, ints = mod$sm$ints)
+  basedive <- pred_mat_maker(model = mod$sm$gam_dive, dat = basedat,
+                             ints = mod$sm$ints)
+  basesurf <- pred_mat_maker(model = mod$sm$gam_surface, dat = basedat,
+                             ints = mod$sm$ints)
   mdive <- cbind(mod$sm$Xs_grid_dive, mod$sm$A_grid_dive)
   msurf <- cbind(mod$sm$Xs_grid_surface, mod$sm$A_grid_surface)
 
@@ -1083,22 +1085,25 @@ GetExposureEff <- function(mod, exp_var = "exp", base_val = 0, exp_val = NULL,
     diveI <- mdive %*% betadive
     surfI <- msurf %*% betasurf
     basepred <- predict(mod,
-                        newdata = list(lambda_dive = kappadive * base_diveI + logkappadive,
-                                       lambda_surf = kappasurf * base_surfI + logkappasurf,
+                        newdata = list(lambda_dive = kappadive * base_diveI +
+                                                     logkappadive,
+                                       lambda_surf = kappasurf * base_surfI +
+                                                     logkappasurf,
                                        kappa_dive = kappadive,
                                        kappa_surf = kappasurf,
                                        from = from,
                                        to = to))
-    pred <- predict(mod, newdata = list(lambda_dive = kappadive * diveI + logkappadive,
-                                        lambda_surf = kappasurf * surfI + logkappasurf,
+    pred <- predict(mod, newdata = list(lambda_dive = kappadive * diveI +
+                                                      logkappadive,
+                                        lambda_surf = kappasurf * surfI +
+                                                      logkappasurf,
                                         kappa_dive = kappadive,
                                         kappa_surf = kappasurf,
                                         from = from,
                                         to = to))
     res <- c(pred$dive - basepred$dive, pred$surface - basepred$surface)
     if (means) {
-      ret <- list(mean = res, pred = pred, base = basepred)
-      res <- ret
+      res <- list(mean = res, pred = pred, base = basepred)
     }
     return(res)
   }
