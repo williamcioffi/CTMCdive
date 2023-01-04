@@ -10,3 +10,7 @@ with the command:
 ```r
 devtools::install_github("atlanticBRS/CTMCdive")
 ```
+
+## Getting started
+
+See the [examples here](https://github.com/atlanticbrs/CTMCdive/tree/master/inst/examples) for more information.
