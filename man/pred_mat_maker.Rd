@@ -7,9 +7,9 @@
 pred_mat_maker(model, dat, ints)
 }
 \arguments{
-\item{model}{fitted gam model}
+\item{model}{fitted gam}
 
-\item{dat}{dataframe}
+\item{dat}{data.frame}
 
 \item{ints}{integration grid}
 }

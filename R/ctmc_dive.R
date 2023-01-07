@@ -159,8 +159,8 @@ MakeMatrices <- function(forms, dat, min_dwell, series = FALSE, nint = 10000, br
 }
 
 #' construct predictor matrix
-#' @param model fitted gam model
-#' @param dat dataframe
+#' @param model fitted gam
+#' @param dat data.frame
 #' @param ints integration grid
 #' @return model matrix for predicting over time grid
 #' @importFrom stats approx
