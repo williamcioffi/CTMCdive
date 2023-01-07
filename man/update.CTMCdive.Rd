@@ -4,16 +4,21 @@
 \alias{update.CTMCdive}
 \title{Add or remove terms from a CTMC model and fit the new model}
 \usage{
-update.CTMCdive(mod, change, which = 0, print = FALSE)
+\method{update}{CTMCdive}(object, change, which = 0, print = FALSE, ...)
 }
 \arguments{
-\item{mod}{model to be amended}
+\item{object}{model to be amended}
 
 \item{change}{change to formula to make, see ?update.formula}
 
 \item{which}{which formula to update, 1 = dive, 2 = surface; if which = 0
 then three models are fit where change is made to each formula individually
 and then to both, an AIC table is printed.}
+
+\item{print}{passed to \code{FitCTMCdive}, should model fitting progress be
+reported}
+
+\item{\dots}{unused, for S3 compatability}
 }
 \value{
 fitted model if which = 1,2 or list of three fitted models if which = 0

@@ -11,7 +11,7 @@ pred_mat_maker(model, dat, ints)
 
 \item{dat}{dataframe}
 
-\item{time}{grid}
+\item{ints}{integration grid}
 }
 \value{
 model matrix for predicting over time grid

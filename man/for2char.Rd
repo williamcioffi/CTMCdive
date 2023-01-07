@@ -4,10 +4,10 @@
 \alias{for2char}
 \title{Formula translated to a character}
 \usage{
-for2char(x, ...)
+for2char(x)
 }
 \arguments{
-\item{...}{}
+\item{x}{a formula}
 }
 \value{
 character

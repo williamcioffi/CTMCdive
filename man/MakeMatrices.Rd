@@ -24,6 +24,10 @@ MakeMatrices(
 \item{series}{TRUE if data is a series rather than dive-by-dive}
 
 \item{nint}{number of integration points}
+
+\item{breaks}{integration grid breaks (usually unnecessary)}
+
+\item{knots}{list of fixed knots to use for the smooths (usually unnecessary)}
 }
 \value{
 list of matrices required to fit the model

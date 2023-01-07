@@ -4,10 +4,12 @@
 \alias{logLik.CTMCdive}
 \title{Returns log-likelihood with degrees of freedom}
 \usage{
-\method{logLik}{CTMCdive}(x, full = TRUE, ...)
+\method{logLik}{CTMCdive}(object, full = TRUE, ...)
 }
 \arguments{
-\item{x}{fitted CTMCdive x}
+\item{object}{fitted CTMCdive}
+
+\item{full}{should the full log likelihood be used (default \code{TRUE})}
 
 \item{\dots}{unused (for S3 compatability)}
 }

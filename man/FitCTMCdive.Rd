@@ -29,12 +29,22 @@ FitCTMCdive(
 
 \item{series}{if TRUE then series data, otherwise dive-by-dive data}
 
-\item{dt}{set time-step in integration, otherwise set to total_time / 10000}
+\item{re}{if not \code{"none"} then fit a discrete random effect on
+dive/surface effects}
 
-\item{rf}{if TRUE then fit a discrete random effect on dive}
+\item{exp_time}{should exposure penalty to be used? List column names for
+exposure variables.}
+
+\item{fixed_decay}{shoudl decay be fixed, if so to what value?}
+
+\item{knots}{list of fixed knots to use for the smooths (usually unnecessary)}
+
+\item{breaks}{integration grid breaks (usually unnecessary)}
+
+\item{dt}{set time-step in integration, otherwise set to total_time / 10000}
 }
 \value{
-
+a CTMCdive model: a list of the estimated results (\code{res}), variance matrix (\code{var}), fitted model returned from \code{optim} (\code{mod}), output from \code{sdreport} (\code{res}), design matrices (\code{Xs}), smoothing data (\code{sm}), formulae (\code{forms}), indices that divide par between dive and surface parameters (\code{len}), data (\code{dat}), indicators for smooths used (\code{lambda}), and model type (\code{model}).
 }
 \description{
 Fits continuous-time Markov chain to dive and surface duration data

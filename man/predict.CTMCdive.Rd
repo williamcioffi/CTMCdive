@@ -4,10 +4,10 @@
 \alias{predict.CTMCdive}
 \title{Predict mean duration from fitted CTMC model for dives and surfacing}
 \usage{
-\method{predict}{CTMCdive}(x, newdata = NULL, ...)
+\method{predict}{CTMCdive}(object, newdata = NULL, ...)
 }
 \arguments{
-\item{x}{CTMCdive fitted model x}
+\item{object}{CTMCdive fitted model}
 
 \item{newdata}{new data frame to make predictions for}
 

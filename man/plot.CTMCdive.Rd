@@ -18,7 +18,7 @@
 )
 }
 \arguments{
-\item{x}{fitted CTMCdive model x}
+\item{x}{fitted CTMCdive model}
 
 \item{quant}{the quantile to plot the observed data up to, for example if set to 0.95 then only the durations up to the 95\% quantile are plotted (prevents outliers dominating the plot)}
 
@@ -32,6 +32,10 @@ processes}
 \item{se}{display uncertainty bands around the lines (takes time to compute)}
 
 \item{n_samp}{number of posterior samples to use if \code{se=TRUE}, otherwise ignored}
+
+\item{pch}{what plot character to use for the points}
+
+\item{cex}{size of points}
 
 \item{\dots}{unused (for S3 compatability)}
 }
