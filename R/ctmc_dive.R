@@ -638,11 +638,11 @@ predict.CTMCdive <- function(object, newdata = NULL, ...) {
     lambda_surf <- object$sm$Xs_grid_surface %*% par_surf
     if (any(names(object$rep$par.random) == "s_surf")) {
       object_surf <- object$rep$par.random[names(object$rep$par.random) == "s_surf"]
-      lambda_surf <- lambda_surf + (object$sm$A_grid_surface %*% par_surf)
+      lambda_surf <- lambda_surf + (object$sm$A_grid_surface %*% object_surf)
     }
     if (any(names(object$rep$par.random) == "s_dive")) {
       object_dive <- object$rep$par.random[names(object$rep$par.random) == "s_dive"]
-      lambda_dive <- lambda_dive + (object$sm$A_grid_dive %*% par_dive)
+      lambda_dive <- lambda_dive + (object$sm$A_grid_dive %*% object_dive)
     }
     diveI <- exp(lambda_dive)
     surfI <- exp(lambda_surf)
