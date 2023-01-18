@@ -764,7 +764,9 @@ plot.CTMCdive <- function(x, quant = 1, pick = NULL, pred = NULL, xlim = NULL, s
   # plot fitted values over observed
   if (pick == "all" | pick == "surface") {
     q <- quantile(dat$surface, prob = quant)
-    plot(time, dat$surface, xlab = "Time", ylab = "Surface duration",  ylim = c(min(dat$surface), q), xlim = xlim, type="n", ...)
+    plot(time, dat$surface, xlab = "Time", ylab = "Surface duration", 
+         ylim = range(c(dat$surface, q, pred$surface)),
+         xlim = xlim, type="n", ...)
     if(se){
       surface_upper <- apply(surface_samples, 1, quantile, probs=0.975)
       surface_lower <- apply(surface_samples, 1, quantile, probs=0.025)
@@ -775,7 +777,9 @@ plot.CTMCdive <- function(x, quant = 1, pick = NULL, pred = NULL, xlim = NULL, s
   }
   if (pick == "all" | pick == "dive") {
     q <- quantile(dat$dive, prob = quant)
-    plot(time, dat$dive, xlab = "Time", ylab = "Dive duration",  ylim = c(min(dat$dive), q), xlim = xlim, type="n", ...)
+    plot(time, dat$dive, xlab = "Time", ylab = "Dive duration",
+         ylim = range(c(dat$dive, q, pred$dive)),
+         xlim = xlim, type="n", ...)
     if(se){
       dive_upper <- apply(dive_samples, 1, quantile, probs=0.975)
       dive_lower <- apply(dive_samples, 1, quantile, probs=0.025)
