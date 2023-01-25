@@ -31,7 +31,7 @@ MakeMatrices <- function(forms, dat, min_dwell, series = FALSE, nint = 10000, br
     for(i in seq_along(gam_dive$smooth)){
       smoo <- gam_dive$smooth[[i]]
       for(j in seq_along(smoo$S)){
-        S_dive_list <- c(S_dive_list, as_dgTMatrix(smoo$S[[j]]))
+        S_dive_list <- c(S_dive_list, as(smoo$S[[j]], "sparseMatrix"))
         res$S_dive_n <- c(res$S_dive_n, nrow(smoo$S[[j]]))
         res$s_dive_k <- c(res$s_dive_k, smoo$bs.dim)
         res$s_dive_names <- c(res$s_dive_names, attr(smoo$sp, "names"))
@@ -68,7 +68,7 @@ MakeMatrices <- function(forms, dat, min_dwell, series = FALSE, nint = 10000, br
     for(i in seq_along(gam_surface$smooth)){
       smoo <- gam_surface$smooth[[i]]
       for(j in seq_along(smoo$S)){
-        S_surface_list <- c(S_surface_list, as_dgTMatrix(smoo$S[[j]]))
+        S_surface_list <- c(S_surface_list, as(smoo$S[[j]], "sparseMatrix"))
         res$S_surface_n <- c(res$S_surface_n, nrow(smoo$S[[j]]))
         res$s_surface_k <- c(res$s_surface_k, smoo$bs.dim)
         res$s_surface_names <- c(res$s_surface_names, attr(smoo$sp, "names"))
@@ -149,8 +149,8 @@ MakeMatrices <- function(forms, dat, min_dwell, series = FALSE, nint = 10000, br
       indS[wh, i] <- 1
     }
   }
-  res$indD <- as_dgTMatrix(indD)
-  res$indS <- as_dgTMatrix(indS)
+  res$indD <- as(indD, "sparseMatrix")
+  res$indS <- as(indS, "sparseMatrix")
 
   res$ints <- ints
   res$dt <- dt
@@ -277,7 +277,7 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
                        s_dive = factor(NA)))
     tmb_parameters$s_dive <- 0
     tmb_parameters$log_lambda_dive <- 0
-    S_dive <- as_dgTMatrix(matrix(0, 1, 1))
+    S_dive <- as(matrix(0, 1, 1), "sparseMatrix")
     S_dive_n <- 0
     A_grid_dive <- matrix(1, ncol(sm$indD), 1)
   } else {
@@ -292,7 +292,7 @@ FitCTMCdive <- function(forms, dat, print = TRUE,
                        s_surf = factor(NA)))
     tmb_parameters$s_surf <- 0
     tmb_parameters$log_lambda_surf <- 0
-    S_surface <- as_dgTMatrix(matrix(0, 1, 1))
+    S_surface <- as(matrix(0, 1, 1), "sparseMatrix")
     S_surface_n <- 0
     A_grid_surface <- matrix(1, ncol(sm$indS), 1)
   } else {
@@ -1315,19 +1315,6 @@ for2char <- function (x) {
   form <- paste(deparse(x), collapse = " ")
   form <- gsub("\\s+", " ", form, perl = FALSE)
   return(form)
-}
-
-
-
-# work-around absolutely derranged Matrix behaviour
-# they can't stop me
-#' @importFrom utils packageVersion
-as_dgTMatrix <- function(x){
-  if(packageVersion("Matrix") < numeric_version("1.5.1")){
-    as(x, "sparseMatrix")
-  }else{
-    as(as(as(x, "dMatrix"), "generalMatrix"), "TsparseMatrix")
-  }
 }
 
 # safely invert a matrix
