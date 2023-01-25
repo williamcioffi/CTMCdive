@@ -1302,7 +1302,8 @@ update.CTMCdive <- function(object, change, which = 0, print = FALSE, ...) {
 
 #' Formula translated to a character
 #'
-#' Borrowed from formula.tools session
+#' Borrowed from formula.tools
+#'
 #' @author Christopher Brown (2018). formula.tools: Programmatic Utilities for
 #' Manipulating Formulas, Expressions, Calls, Assignments and Other R Objects.
 #' R package version 1.7.1.  https://CRAN.R-project.org/package=formula.tools

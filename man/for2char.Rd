@@ -13,7 +13,7 @@ for2char(x)
 character
 }
 \description{
-Borrowed from formula.tools session
+Borrowed from formula.tools
 }
 \author{
 Christopher Brown (2018). formula.tools: Programmatic Utilities for
