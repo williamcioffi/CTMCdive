@@ -4,16 +4,20 @@
 \alias{simulateCTMCziph}
 \title{Simulate CTMCdive data for Ziphius data}
 \usage{
-simulateCTMCziph(dive_fn, surf_fn, T, dt, kappa, sd = NULL, print = TRUE)
+simulateCTMCziph(dive_fn, surf_fn, T, dt, kappa, sd = NULL)
 }
 \arguments{
 \item{dive_fn}{function that given a vector of times computes dive intensity at those times}
 
 \item{surf_fn}{function that given a vector of times computes surface intensity at those times}
 
+\item{T}{end time}
+
 \item{dt}{time step for simulation}
 
-\item{n}{number of dive-surfacings to simulate}
+\item{kappa}{list with values for kappa for the suface and dive components (named \code{surf} and \code{dive}, respectively)}
+
+\item{sd}{standard deviation}
 }
 \value{
 CTMC dataset

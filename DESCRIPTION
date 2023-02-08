@@ -1,15 +1,15 @@
 Package: CTMCdive
 Type: Package
 Title: Fit Continuous-time Markov chain to observed dive and surface durations
-Version: 0.0.2
+Version: 0.0.5
 Author: Richard Glennie and David L Miller
-Maintainer: Richard Glennie <rg374@st-andrews.ac.uk>
+Maintainer: William Cioffi <william.cioffi@duke.edu>
 Description: CTMCdive describes observations of dive durations and surface durations as arising from a continuous-time Markov chain with two states: diving and not diving.
-License: MIT
-Depends: R (>= 3.5.0), methods, mgcv, TMB, RcppEigen, Matrix
+License: MIT + file LICENSE
+Depends: R (>= 3.5.0), methods, mgcv, TMB, RcppEigen, Matrix (>= 1.5.3)
 LinkingTo: TMB, RcppEigen
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Suggests:
     testthat

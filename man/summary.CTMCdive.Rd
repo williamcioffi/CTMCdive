@@ -3,12 +3,14 @@
 \name{summary.CTMCdive}
 \alias{summary.CTMCdive}
 \alias{print.CTMCdive}
-\title{Print summary of CTMCdive x}
+\title{Print summary of CTMCdive}
 \usage{
-\method{summary}{CTMCdive}(x, print = TRUE, ...)
+\method{summary}{CTMCdive}(object, print = TRUE, ...)
 }
 \arguments{
-\item{x}{the CTMCdive fitted model x}
+\item{object}{the CTMCdive fitted model}
+
+\item{print}{should the summary results be printed?}
 
 \item{\dots}{unused (for S3 compatability)}
 }
@@ -16,5 +18,5 @@
 prints a summary
 }
 \description{
-Print summary of CTMCdive x
+Print summary of CTMCdive
 }

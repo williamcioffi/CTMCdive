@@ -7,11 +7,11 @@
 pred_mat_maker(model, dat, ints)
 }
 \arguments{
-\item{model}{fitted gam model}
+\item{model}{fitted gam}
 
-\item{dat}{dataframe}
+\item{dat}{data.frame}
 
-\item{time}{grid}
+\item{ints}{integration grid}
 }
 \value{
 model matrix for predicting over time grid

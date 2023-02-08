@@ -10,8 +10,7 @@ simulateCTMC2(
   T,
   dt,
   kappa = list(dive = 1, surf = 1),
-  sd = NULL,
-  print = TRUE
+  sd = NULL
 )
 }
 \arguments{
@@ -19,9 +18,13 @@ simulateCTMC2(
 
 \item{surf_fn}{function that given a vector of times computes surface intensity at those times}
 
+\item{T}{end time}
+
 \item{dt}{time step for simulation}
 
-\item{n}{number of dive-surfacings to simulate}
+\item{kappa}{list with values for kappa for the suface and dive components (named \code{surf} and \code{dive}, respectively)}
+
+\item{sd}{standard deviation}
 }
 \value{
 CTMC dataset

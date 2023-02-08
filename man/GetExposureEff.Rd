@@ -11,6 +11,10 @@ GetExposureEff(mod, exp_var = "exp", base_val = 0, exp_val = NULL, nsims = 200)
 
 \item{exp_var}{name of variable(s) non-zero when exposure occurs}
 
+\item{base_val}{what is the value to use for the baseline (default 0)}
+
+\item{exp_val}{what value should be used for the exposure}
+
 \item{nsims}{number of posterior simulations}
 }
 \value{

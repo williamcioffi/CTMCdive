@@ -4,10 +4,10 @@
 \alias{AIC.CTMCdiveList}
 \title{Akaike's An Information Criterion for lists of CTMCdive models}
 \usage{
-\method{AIC}{CTMCdiveList}(x, ..., k = 2)
+\method{AIC}{CTMCdiveList}(object, ..., k = 2)
 }
 \arguments{
-\item{x}{a fitted detection function x}
+\item{object}{a fitted detection function}
 
 \item{\dots}{optionally more fitted model xs.}
 

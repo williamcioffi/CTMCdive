@@ -9,12 +9,13 @@ GetExposureEffonIntensity(mod, predgrid, basedat, nsims = 1000)
 \arguments{
 \item{mod}{fitted CTMC model}
 
-\item{predgrid}{data frame with same columns as data but with a user-defined time grid to estimate the effect over 
-must have a column which is 1 when exposure is one and zero otherwise}
+\item{predgrid}{data frame with same columns as data but with a user-defined
+time grid to estimate the effect over must have a column which is 1 when
+exposure is one and zero otherwise}
+
+\item{basedat}{baseline data}
 
 \item{nsims}{number of posterior simulations, default is 1000}
-
-\item{exp}{name of exposure indicator}
 }
 \value{
 list with dive and surface elements which each contain the mean exposure effect and the credible interval bands
